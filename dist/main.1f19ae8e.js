@@ -117,9 +117,94 @@ parcelRequire = (function (modules, cache, entry, globalName) {
   }
 
   return newRequire;
-})({"main.js":[function(require,module,exports) {
+})({"redditapi.js":[function(require,module,exports) {
+"use strict";
 
-},{}],"../AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+var _default = {
+  search: function search(searchTerm, searchLimit, sortBy) {
+    return fetch("http://www.reddit.com/search.json?q=".concat(searchTerm, "&sort=").concat(sortBy, "&limit=").concat(searchLimit)).then(function (res) {
+      return res.json();
+    }).then(function (data) {
+      return data.data.children.map(function (data) {
+        return data.data;
+      });
+    }).catch(function (err) {
+      return console.log(err);
+    });
+  }
+};
+exports.default = _default;
+},{}],"main.js":[function(require,module,exports) {
+"use strict";
+
+var _redditapi = _interopRequireDefault(require("./redditapi"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var searchForm = document.getElementById('search-form');
+var searchInput = document.getElementById('search-input'); // Form event listenr
+
+searchForm.addEventListener('submit', function (e) {
+  //Get search Term
+  var searchTerm = searchInput.value; // Get sort
+
+  var sortBy = document.querySelector('input[name="sortby"]:checked').value;
+  var searchLimit = document.getElementById('limit').value;
+  console.log(searchLimit); // Check input
+
+  if (searchTerm === '') {
+    // Show message
+    showMessage("please add a search term", 'alert-danger');
+  } // to clear the input
+
+
+  searchInput.value = ''; //search
+
+  _redditapi.default.search(searchTerm.searchLimit, sortBy).then(function (results) {
+    console.log(results);
+    var output = '<div class="card-columns">'; // Check for image
+    // Loop through posts
+
+    results.forEach(function (post) {
+      var image = post.preview ? post.preview.images[0].source.url : 'https://cdn.comparitech.com/wp-content/uploads/2017/08/reddit-1.jpg';
+      output += "\n         <div class=\"card\">\n    <img class=\"card-img-top\" src=\"".concat(image, "\" alt=\"Card image cap\">\n    <div class=\"card-body\">\n    <h5 class=\"card-title\">").concat(post.title, "</h5>\n    <p class=\"card-text\">").concat(truncateText(post.selftext, 100), "</p>\n    <a href=\"").concat(post.url, "\" target=\"_blank\" class=\"btn btn-primary\">Read More</a>\n     </div>\n     </div>\n         ");
+    });
+    output += '';
+    document.getElementById('results').innerHTML = output;
+  });
+
+  e.preventDefault();
+});
+
+function showMessage(message, className) {
+  // create div
+  var div = document.createElement('div'); // add Claesses
+
+  div.className = "alert ".concat(className); // add text
+
+  div.appendChild(document.createTextNode(message)); // get parent
+
+  var searchContainer = document.getElementById('search-container'); //Get Search
+
+  var search = document.getElementById('search'); // Insert message
+
+  searchContainer.insertBefore(div, search); // Timeout alert
+
+  setTimeout(function () {
+    document.querySelector('.alert').remove();
+  }, 3000);
+}
+
+function truncateText(text, limit) {
+  var shortened = text.indexOf('', limit);
+  if (shortened == -1) return text;
+  return text.substring(0, shortened);
+}
+},{"./redditapi":"redditapi.js"}],"../AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
